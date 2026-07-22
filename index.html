@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lady Expense Tracker</title>
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkxhZHkgRXhwZW5zZSBUcmFja2VyIiwKICAic2hvcnRfbmFtZSI6ICJMYWR5IEV4cGVuc2UiLAogICJkZXNjcmlwdGlvbiI6ICJUcmFjayB5b3VyIGV4cGVuc2VzIGJlYXV0aWZ1bGx5IiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmOWYzZjAiLAogICJ0aGVtZV9jb2xvciI6ICIjYzI3ZTZiIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLDxzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgNTEyIDUxMic+PHJlY3Qgd2lkdGg9JzUxMicgaGVpZ2h0PSc1MTInIHJ4PSc4MCcgZmlsbD0nI2MyN2U2YicvPjx0ZXh0IHg9JzI1NicgeT0nMzQwJyBmb250LXNpemU9JzI4MCcgdGV4dC1hbmNob3I9J21pZGRsZScgZmlsbD0nd2hpdGUnIGZvbnQtZmFtaWx5PSdBcmlhbCc+4p2kPC90ZXh0Pjwvc3ZnPg=="LAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiCiAgICB9CiAgXQp9">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    body { background: #f9f3f0; padding: 12px 8px 20px; min-height: 100vh; }
+    .app { max-width: 460px; margin: 0 auto; background: #fff9f7; border-radius: 40px 40px 28px 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); padding: 20px 16px 30px; }
+    h1 { font-size: 26px; font-weight: 500; color: #4a2e2a; display: flex; align-items: center; gap: 8px; padding-bottom: 12px; border-bottom: 2px solid #f0d9d2; margin-bottom: 18px; }
+    h1 i { color: #c27e6b; font-size: 28px; }
+    .summary-card { background: #fceeea; border-radius: 28px; padding: 16px 18px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; box-shadow: inset 0 1px 4px rgba(255,255,255,0.8), 0 4px 8px rgba(180,100,80,0.08); }
+    .summary-item { text-align: center; }
+    .summary-item .label { font-size: 13px; font-weight: 500; color: #7e5a4e; }
+    .summary-item .value { font-size: 22px; font-weight: 600; color: #3d241f; }
+    .summary-item.income .value { color: #2f6b4a; }
+    .summary-item.expense .value { color: #b14e3a; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px 6px; margin-bottom: 24px; justify-content: center; }
+    .tab-btn { background: #f5e8e3; border: none; padding: 10px 16px; border-radius: 60px; font-size: 14px; font-weight: 500; color: #4f3530; display: inline-flex; align-items: center; gap: 8px; transition: 0.15s; cursor: pointer; flex: 0 1 auto; border: 1px solid transparent; }
+    .tab-btn i { font-size: 16px; color: #a57160; }
+    .tab-btn.active { background: #dcc2b8; border-color: #b48b7a; color: #2c1d19; box-shadow: 0 4px 8px rgba(140,80,60,0.12); }
+    .tab-btn.active i { color: #4f2d23; }
+    .panel { background: #fffcfb; border-radius: 32px; padding: 18px 16px 20px; box-shadow: 0 6px 18px rgba(150,90,70,0.06); border: 1px solid #f3e1da; margin-bottom: 12px; display: none; }
+    .panel.active { display: block; }
+    .panel h2 { font-size: 20px; font-weight: 500; color: #3a2823; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; border-bottom: 2px dashed #edd9d0; padding-bottom: 12px; }
+    .panel h2 i { color: #b17d6b; }
+    .entry-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 6px; margin-bottom: 14px; background: #fcf5f1; padding: 8px 10px; border-radius: 40px; border: 1px solid #f0dfd7; }
+    .entry-row input, .entry-row select { border: none; background: transparent; padding: 8px 6px; font-size: 15px; flex: 1 0 80px; min-width: 60px; outline: none; border-bottom: 2px solid #edd9d0; transition: 0.1s; }
+    .entry-row input:focus, .entry-row select:focus { border-bottom-color: #b48b7a; }
+    .entry-row button { background: #dcc2b8; border: none; border-radius: 40px; padding: 8px 18px; font-weight: 500; color: #2f1d18; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: 0.1s; font-size: 14px; border: 1px solid #bfa396; }
+    .entry-row button:hover { background: #c9aca0; }
+    .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 8px; border-bottom: 1px solid #f3e3dc; font-size: 15px; color: #2f2320; }
+    .list-item .date-badge { background: #eee0d9; border-radius: 40px; padding: 2px 12px; font-size: 12px; font-weight: 500; color: #4e352e; }
+    .list-item .amount { font-weight: 600; color: #3d241f; }
+    .total-badge { background: #ebdad3; border-radius: 60px; padding: 8px 16px; display: inline-block; margin-top: 10px; font-weight: 500; }
+    .flex-space { display: flex; justify-content: space-between; align-items: center; }
+    .milk-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+    .milk-grid input { width: 50px; padding: 6px 4px; border: 1px solid #decac1; border-radius: 20px; background: #fcf5f1; text-align: center; }
+    .inline-label { font-size: 14px; color: #4e3730; margin-right: 4px; }
+    .footer-tip { text-align: center; font-size: 13px; color: #a78476; margin-top: 20px; letter-spacing: 0.2px; }
+    .install-banner { background: linear-gradient(135deg, #c27e6b, #e8b4a0); color: white; padding: 15px 20px; border-radius: 20px; margin-bottom: 15px; display: none; align-items: center; justify-content: space-between; animation: slideDown 0.5s ease; }
+    .install-banner.show { display: flex; }
+    .install-banner button { background: white; border: none; padding: 10px 25px; border-radius: 30px; font-weight: 600; color: #c27e6b; cursor: pointer; font-size: 14px; }
+    @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  </style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- Install Banner -->
+  <div class="install-banner" id="installBanner">
+    <div>
+      <strong>📲 Install App</strong><br>
+      <span style="font-size:13px;opacity:0.9;">Add to home screen for best experience</span>
+    </div>
+    <button id="installBtn">Install</button>
+  </div>
+
+  <h1><i class="fas fa-hand-holding-heart"></i> Lady · Expense</h1>
+
+  <!-- Summary -->
+  <div class="summary-card">
+    <div class="summary-item income"><span class="label">Income</span><div class="value" id="totalIncome">0</div></div>
+    <div class="summary-item expense"><span class="label">Expense</span><div class="value" id="totalExpense">0</div></div>
+    <div class="summary-item"><span class="label">Balance</span><div class="value" id="balance">0</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" id="tabsContainer"></div>
+
+  <!-- Panels -->
+  <div id="panelsContainer"></div>
+
+  <div class="footer-tip"><i class="fas fa-heart" style="color:#b17d6b;"></i> for my lady wife · works offline</div>
+</div>
+
+<script>
+// ===== DATA =====
+const data = {
+  income: [],
+  groceries: [],
+  maid1: [],
+  maid2: [],
+  milk: { liters: Array(31).fill(0), price: 0 },
+  fuel: [],
+  chickenMeat: [],
+  daily: [],
+  medicine: [],
+  fruits: [],
+  tuition: [],
+  other: []
+};
+
+// Load saved data
+function loadData() {
+  try {
+    const saved = localStorage.getItem('ladyExpenseData');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      Object.assign(data, parsed);
+    }
+  } catch(e) {}
+}
+loadData();
+
+// Save data
+function saveData() {
+  try {
+    localStorage.setItem('ladyExpenseData', JSON.stringify(data));
+  } catch(e) {}
+}
+
+// ===== HELPERS =====
+function sum(arr) { return arr.reduce((s, i) => s + (Number(i.amount)||0), 0); }
+function fmt(v) { return Math.round(v); }
+function today() { return new Date().toISOString().slice(0,10); }
+
+// ===== RENDER =====
+function render() {
+  const totalInc = sum(data.income);
+  const totalExp = 
+    sum(data.groceries) + sum(data.maid1) + sum(data.maid2) +
+    (data.milk.liters.reduce((a,b) => a + (Number(b)||0), 0) * (data.milk.price||0)) +
+    sum(data.fuel) + sum(data.chickenMeat) + sum(data.daily) +
+    sum(data.medicine) + sum(data.fruits) + sum(data.tuition) + sum(data.other);
+  
+  document.getElementById('totalIncome').textContent = fmt(totalInc);
+  document.getElementById('totalExpense').textContent = fmt(totalExp);
+  document.getElementById('balance').textContent = fmt(totalInc - totalExp);
+  
+  renderPanels();
+  saveData();
+}
+
+// ===== PANELS =====
+function renderPanels() {
+  const container = document.getElementById('panelsContainer');
+  container.innerHTML = '';
+  
+  const panels = [
+    { id: 'income', label: 'Income', icon: 'fa-coins', html: incomeHTML },
+    { id: 'groceries', label: 'Groceries', icon: 'fa-basket-shopping', html: groceriesHTML },
+    { id: 'maid1', label: 'Maid 1', icon: 'fa-hands', html: maid1HTML },
+    { id: 'maid2', label: 'Maid 2', icon: 'fa-hands', html: maid2HTML },
+    { id: 'milk', label: 'Milk', icon: 'fa-glass-milk', html: milkHTML },
+    { id: 'fuel', label: 'Fuel', icon: 'fa-gas-pump', html: fuelHTML },
+    { id: 'chickenMeat', label: 'Chicken/Meat', icon: 'fa-drumstick-bite', html: chickenMeatHTML },
+    { id: 'daily', label: 'Daily', icon: 'fa-calendar-day', html: dailyHTML },
+    { id: 'medicine', label: 'Medicine', icon: 'fa-pills', html: medicineHTML },
+    { id: 'fruits', label: 'Fruits', icon: 'fa-apple-alt', html: fruitsHTML },
+    { id: 'tuition', label: 'Tuition', icon: 'fa-graduation-cap', html: tuitionHTML },
+    { id: 'other', label: 'Other', icon: 'fa-ellipsis-h', html: otherHTML }
+  ];
+  
+  const tabsContainer = document.getElementById('tabsContainer');
+  tabsContainer.innerHTML = '';
+  
+  panels.forEach((p, idx) => {
+    const tab = document.createElement('button');
+    tab.className = 'tab-btn' + (idx === 0 ? ' active' : '');
+    tab.innerHTML = `<i class="fas ${p.icon}"></i> ${p.label}`;
+    tab.onclick = () => {
+      document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
+      const panel = document.getElementById(`panel-${p.id}`);
+      if (panel) panel.classList.add('active');
+    };
+    tabsContainer.appendChild(tab);
+    
+    const div = document.createElement('div');
+    div.id = `panel-${p.id}`;
+    div.className = 'panel' + (idx === 0 ? ' active' : '');
+    div.innerHTML = p.html();
+    container.appendChild(div);
+  });
+  
+  setTimeout(attachEvents, 50);
+}
+
+// ===== HTML BUILDERS =====
+function incomeHTML() {
+  let list = data.income.map((e,i) => `<div class="list-item"><span>${e.desc||'Income'} <span class="date-badge">${e.date||''}</span></span><span class="amount">+${fmt(e.amount)}</span></div>`).join('');
+  return `<h2><i class="fas fa-coins"></i> Income</h2>
+    <div class="entry-row"><input id="incDesc" placeholder="desc" value="Salary"><input id="incAmount" type="number" placeholder="amount"><input id="incDate" type="date" value="${today()}"><button onclick="addIncome()"><i class="fas fa-plus"></i> Add</button></div>
+    ${list || '<div style="padding:10px;color:#9b7a6b;">No income yet</div>'}`;
+}
+
+function groceriesHTML() {
+  let list = data.groceries.map((e,i) => `<div class="list-item"><span>${e.desc||'Groceries'} <span class="date-badge">${e.date||''}</span></span><span class="amount">${fmt(e.amount)}</span></div>`).join('');
+  return `<h2><i class="fas fa-basket-shopping"></i> Groceries</h2>
+    <div class="entry-row"><input id="grocDesc" placeholder="item"><input id="grocAmount" type="number" placeholder="price"><input id="grocDate" type="date" value="${today()}"><button onclick="addGrocery()"><i class="fas fa-plus"></i> Add</button></div>
+    ${list || '<div style="padding:10px;color:#9b7a6b;">No groceries</div>'}`;
+}
+
+function maid1HTML() {
+  let list = data.maid1.map((e,i) => `<div class="list-item"><span>Maid 1 <span class="date-badge">${e.date||''}</span></span><span class="amount">${fmt(e.amount)}</span></div>`).join('');
+  return `<h2><i class="fas fa-hands"></i> Maid 1</h2>
+    <div class="entry-row"><input id="maid1Amount" type="number" placeholder="amount"><input id="maid1Date" type="date" value="${today()}"><button onclick="addMaid(1)"><i class="fas fa-plus"></i> Add</button></div>
+    ${list || '<div style="padding:10px;color:#9b7a6b;">No payments</div>'}`;
+}
+
+function maid2HTML() {
+  let list = data.maid2.map((e,i) => `<div class="list-item"><span>Maid 2 <span class="date-badge">${e.date||''}</span></span><span class="amount">${fmt(e.amount)}</span></div>`).join('');
+  return `<h2><i class="fas fa-hands"></i> Maid 2</h2>
+    <div class="entry-row"><input id="maid2Amount" type="number" placeholder="amount"><input id="maid2Date" type="date" value="${today()}"><button onclick="addMaid(2)"><i class="fas fa-plus"></i> Add</button></div>
+    ${list || '<div style="padding:10px;color:#9b7a6b;">No payments</div>'}`;
+}
+
+function milkHTML() {
+  let grid = data.milk.liters.map((v,i) => `<input type="number" step="0.1" id="milkDay${i+1}" value="${v||0}" placeholder="${i+1}">`).join('');
+  const total = data.milk.liters.reduce((a,b) => a + (Number(b)||0), 0);
+  const cost = total * (data.milk.price||0);
+  return `<h2><i class="fas fa-glass-milk"></i> Milk (31 days)</h2>
+    <div class="entry-row"><span class="inline-label">Price/L:</span><input id="milkPrice" type="number" step="0.1" value="${data.milk.price||0}" style="flex:0.5;"><button onclick="saveMilk()"><i class="fas fa-save"></i> Save</button></div>
+    <div class="milk-grid">${grid}</div>
+    <div><span class="total-badge">Total: ${total.toFixed(1)}L = ${fmt(cost)}</span></div>
+    <div style="margin-top:8px;font-size:13px;color:#5f413a;">Edit liters above, then Save</div>`;
+}
+
+function fuelHTML() {
+  let list = data.fuel.map((e,i) => `<div class="list-item"><span>Fuel <span class="date-badge">${e.date||''}</span></span><span class="amount">${fmt(e.amount)}</span></div>`).join('');
+  return `<h2><i class="fas fa-gas-pump"></i> Fuel</h2>
+    <div class="entry-row"><input id="fuelDesc" placeholder="liters" style="flex:0.5;"><input id="fuelAmount" type="number" placeholder="total"><input id="fuelDate" type="date" value="${today()}"><button onclick="addFuel()"><i class="fas fa-plus"></i> Add</button></div>
+    ${list || '<div style="padding:10px;color:#9b7a6b;">No fuel entries</div>'}`;
+}
+
+function chickenMeatHTML() {
+  let list = data.chickenMeat.map((e,i) => `<div class="list-item"><span>${e.desc||'Chicken/Meat'} <span class="date-badge">${e.date||''}</span></span><span class="amount">${fmt(e.amount)}</span></div>`).join('');
+  return `<h2><i class="fas fa-drumstick-bite"></i> Chicken / Meat</h2>
+    <div class="entry-row"><select id="cmType"><option>Chicken</option><option>Meat</option></select><input id="cmAmount" type="number" placeholder="price"><input id="cmDate" type="date" value="${today()}"><button onclick="addCM()"><i class="fas fa-plus"></i> Add</button></div>
+    ${list || '<div style="padding:10px;color:#9b7a6b;">No entries</div>'}`;
+}
+
+function dailyHTML() {
+  let list = data.daily.map((e,i) => `<div class="list-item"><span>${e.desc||'Daily'} <span class="date-badge">${e.date||''}</span></span><span class="amount">${fmt(e.amount)}</span></div>`).join('');
+  return `<h2><i class="fas fa-calendar-day"></i> Daily Expense</h2>
+    <div class="entry-row"><input id="dailyDesc" placeholder="desc"><input id="dailyAmount" type="number" placeholder="amount"><input id="dailyDate" type="date" value="${today()}"><button onclick="addDaily()"><i class="fas fa-plus"></i> Add</button></div>
+    ${list || '<div style="padding:10px;color:#9b7a6b;">No daily expenses</div>'}`;
+}
+
+function medicineHTML() {
+  let list = data.medicine.map((e,i) => `<div class="list-item"><span>${e.desc||'Medicine'} <span class="date-badge">${e.date||''}</span></span><span class="amount">${fmt(e.amount)}</span></div>`).join('');
+  return `<h2><i class="fas fa-pills"></i> Medicine</h2>
+    <div class="entry-row"><input id="medDesc" placeholder="desc"><input id="medAmount" type="number" placeholder="amount"><input id="medDate" type="date" value="${today()}"><button onclick="addMedicine()"><i class="fas fa-plus"></i> Add</button></div>
+    ${list || '<div style="padding:10px;color:#9b7a6b;">No medicine</div>'}`;
+}
+
+function fruitsHTML() {
+  let list = data.fruits.map((e,i) => `<div class="list-item"><span>${e.desc||'Fruits'} <span class="date-badge">${e.date||''}</span></span><span class="amount">${fmt(e.amount)}</span></div>`).join('');
+  return `<h2><i class="fas fa-apple-alt"></i> Fruits</h2>
+    <div class="entry-row"><input id="fruitDesc" placeholder="desc"><input id="fruitAmount" type="number" placeholder="amount"><input id="fruitDate" type="date" value="${today()}"><button onclick="addFruits()"><i class="fas fa-plus"></i> Add</button></div>
+    ${list || '<div style="padding:10px;color:#9b7a6b;">No fruits</div>'}`;
+}
+
+function tuitionHTML() {
+  let list = data.tuition.map((e,i) => `<div class="list-item"><span>${e.desc||'Tuition'} <span class="date-badge">${e.date||''}</span></span><span class="amount">${fmt(e.amount)}</span></div>`).join('');
+  return `<h2><i class="fas fa-graduation-cap"></i> Tuition</h2>
+    <div class="entry-row"><input id="tuitDesc" placeholder="desc"><input id="tuitAmount" type="number" placeholder="amount"><input id="tuitDate" type="date" value="${today()}"><button onclick="addTuition()"><i class="fas fa-plus"></i> Add</button></div>
+    ${list || '<div style="padding:10px;color:#9b7a6b;">No tuition</div>'}`;
+}
+
+function otherHTML() {
+  let list = data.other.map((e,i) => `<div class="list-item"><span>${e.desc||'Other'} <span class="date-badge">${e.date||''}</span></span><span class="amount">${fmt(e.amount)}</span></div>`).join('');
+  return `<h2><i class="fas fa-ellipsis-h"></i> Other</h2>
+    <div class="entry-row"><input id="otherDesc" placeholder="desc"><input id="otherAmount" type="number" placeholder="amount"><input id="otherDate" type="date" value="${today()}"><button onclick="addOther()"><i class="fas fa-plus"></i> Add</button></div>
+    ${list || '<div style="padding:10px;color:#9b7a6b;">No other expenses</div>'}`;
+}
+
+// ===== ADD FUNCTIONS =====
+function attachEvents() {
+  window.addIncome = function() {
+    const desc = document.getElementById('incDesc')?.value || 'Income';
+    const amount = parseFloat(document.getElementById('incAmount')?.value) || 0;
+    const date = document.getElementById('incDate')?.value || today();
+    if (amount > 0) { data.income.push({desc, amount, date}); render(); }
+  };
+  window.addGrocery = function() {
+    const desc = document.getElementById('grocDesc')?.value || 'Groceries';
+    const amount = parseFloat(document.getElementById('grocAmount')?.value) || 0;
+    const date = document.getElementById('grocDate')?.value || today();
+    if (amount > 0) { data.groceries.push({desc, amount, date}); render(); }
+  };
+  window.addMaid = function(n) {
+    const amount = parseFloat(document.getElementById(`maid${n}Amount`)?.value) || 0;
+    const date = document.getElementById(`maid${n}Date`)?.value || today();
+    if (amount > 0) {
+      if (n===1) data.maid1.push({amount, date});
+      else data.maid2.push({amount, date});
+      render();
+    }
+  };
+  window.saveMilk = function() {
+    const liters = [];
+    for (let i=1; i<=31; i++) {
+      const inp = document.getElementById(`milkDay${i}`);
+      liters.push(parseFloat(inp?.value) || 0);
+    }
+    data.milk.liters = liters;
+    data.milk.price = parseFloat(document.getElementById('milkPrice')?.value) || 0;
+    render();
+  };
+  window.addFuel = function() {
+    const desc = document.getElementById('fuelDesc')?.value || 'Fuel';
+    const amount = parseFloat(document.getElementById('fuelAmount')?.value) || 0;
+    const date = document.getElementById('fuelDate')?.value || today();
+    if (amount > 0) { data.fuel.push({desc, amount, date}); render(); }
+  };
+  window.addCM = function() {
+    const desc = document.g
